@@ -23,6 +23,7 @@ class TodoList extends React.Component {
         this.changeTitle = this.changeTitle.bind(this);
         this.changeDetail = this.changeDetail.bind(this);
         this.addTodo = this.addTodo.bind(this);
+        this.deleteTodo = this.deleteTodo.bind(this);
     }
 
     changeTitle(e) {
@@ -44,10 +45,18 @@ class TodoList extends React.Component {
       this.setState({detailValue: ""});
     }
 
+    deleteTodo(title) {
+      let newData = this.state.data.filter(function(obj) {
+          return obj.title !== title;
+      });
+      this.setState({data: newData});
+      console.log(this.state.data);
+    }
+
     render() {
-       var todo = this.props.data.map(function (obj) {
-           return <Todo title={obj.title} key={obj.title}>{obj.detail}</Todo>
-       });
+       let todo = this.state.data.map(function (obj) {
+           return <Todo title={obj.title} key={obj.title} onDelete={this.deleteTodo}>{obj.detail}</Todo>
+       }.bind(this));
        return (
            <div className="todoList">
               <div>
@@ -66,41 +75,45 @@ class TodoList extends React.Component {
 }
 
 class Todo extends React.Component {
-   constructor(props) {
+    constructor(props) {
        super(props);
        this.state = {
            checked: false,
            TodoStyle: style.notCheckedTodo
        };
        this.handleChange = this.handleChange.bind(this);
-   }
+       this._onDelete = this._onDelete.bind(this);
+    }
 
-   handleChange(e) {
-       this.setState({
-           checked: e.target.checked
-       });
-       if (e.target.checked) {
-           this.setState({
-               TodoStyle: style.checkedTodo
-           });
-       } else {
-           this.setState({
-               TodoStyle: style.notCheckedTodo
-           });
-       }
-   }
+    handleChange(e) {
+        this.setState({
+            checked: e.target.checked
+        });
+        if (e.target.checked) {
+            this.setState({
+                TodoStyle: style.checkedTodo
+            });
+        } else {
+            this.setState({
+                TodoStyle: style.notCheckedTodo
+            });
+        }
+    }
 
-   render() {
-       return (
-           <tr style={this.state.TodoStyle}>
-               <td style={style.tableContent}>
-                   <input type="checkbox" checked={this.state.checked} onChange={this.handleChange}/>
-               </td>
-               <td style={style.tableContent}>{this.props.title}</td>
-               <td style={style.tableContent}>{this.props.children}</td>
-           </tr>
-       );
-   }
+    _onDelete() {
+        this.props.onDelete(this.props.title);
+    }
+
+    render() {
+        return (
+            <tr style={this.state.TodoStyle}>
+                <td style={style.tableContent}><button onClick={this._onDelete}>X</button></td>
+                <td style={style.tableContent}><input type="checkbox" checked={this.state.checked} onChange={this.handleChange}/></td>
+                <td style={style.tableContent}>{this.props.title}</td>
+                <td style={style.tableContent}>{this.props.children}</td>
+            </tr>
+        );
+    }
 }
 Todo.propTypes = {
    title: React.PropTypes.string.isRequired
